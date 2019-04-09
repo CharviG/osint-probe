@@ -5,6 +5,7 @@
 #               Also defines the SpiderFootPlugin abstract class for modules.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     26/03/2012
 # Copyright:   (c) Steve Micallef 2012
@@ -31,6 +32,7 @@ def unicode(text, *args, **kwargs):
 class SpiderFoot:
     def __init__(self):
         self.results = list()
+        self._cache = {}
 
     def clear_results(self):
         self.results = list()
@@ -69,30 +71,57 @@ class SpiderFoot:
     def validIP(self, address):
         return netaddr.valid_ipv4(address)
 
+    # Clean DNS results to be a simple list
+    def normalizeDNS(self, res):
+        ret = list()
+        for addr in res:
+            if type(addr) == list:
+                for host in addr:
+                    ret.append(str(host))
+            else:
+                ret.append(str(addr))
+        return ret
+
     #
     # Caching
     #
 
-    # Return the cache path
-    def cachePath(self):
-        path = self.myPath() + '/cache'
-        if not os.path.isdir(path):
-            os.mkdir(path)
-        return path
-
     # Store data to the cache
     def cachePut(self, label, data):
-        return None
+        if type(data) is list:
+            data = '\n'.join(data)
+        self._cache[label] = {'data': data, 'time': time.time()}
 
     # Retreive data from the cache
     def cacheGet(self, label, timeoutHrs):
+        if label not in self._cache.keys():
+            return None
+
+        entry = self._cache[label]
+        if entry['time'] > time.time() - timeoutHrs * 3600 or timeoutHrs == 0:
+            return self._cache[label]['data']
         return None
+
+    def myPath(self):
+        # This will get us the program's directory, even if we are frozen using py2exe.
+        # Determine whether we've been compiled by py2exe
+        if hasattr(sys, "frozen"):
+            return os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding()))
+        return os.path.dirname(unicode(__file__, sys.getfilesystemencoding()))
+
+    # Return dictionary words and/or names
+    def dictwords(self):
+        return []
+
+    # Return dictionary names
+    def dictnames(self):
+        return []
 
     # Fetch a URL, return the response object
     def fetchUrl(self, url, fatal=False, cookies=None, timeout=30,
-                 useragent="SpiderFoot", headers=None, noLog=False,
+                 useragent='Spiderfoot', headers=None, noLog=False,
                  postData=None, dontMangle=False, sizeLimit=None,
-                 headOnly=False):
+                 headOnly=False, isJson=False):
         result = {
             'code': None,
             'status': None,
@@ -166,25 +195,37 @@ class SpiderFoot:
                     self.info("Fetching: " + url + " [timeout: " + str(timeout) + "]")
 
             result['headers'] = dict()
-            opener = urllib.request.build_opener(SmartRedirectHandler())
-            fullPage = opener.open(req, timeout=timeout)
-            content = fullPage.read()
 
-            for k, v in fullPage.info().items():
-                result['headers'][k.lower()] = v
+            if isJson:
+                _ = requests.get(url, headers=header)
 
-            # Content is compressed
-            if 'gzip' in result['headers'].get('content-encoding', ''):
-                content = gzip.GzipFile(fileobj=StringIO(content)).read()
+                for k, v in _.headers.items():
+                    result['headers'][k.lower()] = v
 
-            if dontMangle:
-                result['content'] = content
+                result['realurl'] = url
+                result['content'] = _.json()
+                result['code'] = str(_.status_code)
+                result['status'] = 'OK'
             else:
-                result['content'] = str(content)
+                opener = urllib.request.build_opener(SmartRedirectHandler())
+                fullPage = opener.open(req, timeout=timeout)
+                content = fullPage.read()
 
-            result['realurl'] = fullPage.geturl()
-            result['code'] = str(fullPage.getcode())
-            result['status'] = 'OK'
+                for k, v in fullPage.info().items():
+                    result['headers'][k.lower()] = v
+
+                # Content is compressed
+                if 'gzip' in result['headers'].get('content-encoding', ''):
+                    content = gzip.GzipFile(fileobj=StringIO(content)).read()
+
+                if dontMangle:
+                    result['content'] = content
+                else:
+                    result['content'] = str(content)
+
+                result['realurl'] = fullPage.geturl()
+                result['code'] = str(fullPage.getcode())
+                result['status'] = 'OK'
         except urllib.request.HTTPError as h:
             if not noLog:
                 self.info("HTTP code " + str(h.code) + " encountered for " + url)
@@ -309,7 +350,6 @@ class SpiderFootPlugin:
     def notifyListeners(self, sfEvent):
         if self.checkForStop():
             return None
-
         self.sf.save_result(sfEvent.asDict())
 
     # For modules to use to check for when they should give back control
@@ -393,7 +433,6 @@ class SpiderFootEvent:
 
     def asDict(self):
         return {
-            'generated': int(self.generated),
             'type': self.eventType,
             'data': self.data,
             'module': self.module,
