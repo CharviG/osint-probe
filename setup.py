@@ -5,7 +5,7 @@ setup(
     author='Ajoy Oommen',
     description='An OSINT tool made using Spiderfoot',
     license='MIT',
-    packages=['modules'],
+    packages=['sfp_modules'],
     py_modules=['sflib', 'osint_probe'],
     install_requires=[
         'beautifulsoup4',

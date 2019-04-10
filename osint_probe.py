@@ -43,12 +43,12 @@ class Probe:
         curr_path = os.path.dirname(__file__)
 
         for _module in module_list:
-            if _module not in os.listdir(curr_path + '\\modules\\'):
+            if _module not in os.listdir(curr_path + '\\sfp_modules\\'):
                 continue
 
             mod_name = _module.split('.')[0]
 
-            mod = __import__('spiderfoot.modules.' + mod_name, globals(), locals(), [mod_name])
+            mod = __import__('sfp_modules.' + mod_name, globals(), locals(), [mod_name])
             _cls = getattr(mod, mod_name)
             self.call_module(_cls, mod_name, target)
         return self.sf.get_results()
