@@ -5,13 +5,14 @@
 #               potential malicious IPs and e-mail addresses.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     25/07/2016
 # Copyright:   (c) Steve Micallef 2016
 # Licence:     GPL
 # -------------------------------------------------------------------------------
 
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_botscout(SpiderFootPlugin):

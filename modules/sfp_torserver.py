@@ -4,6 +4,7 @@
 # Purpose:      Checks if an IP or netblock appears on the TOR server list.
 #
 # Author:       steve@binarypool.com
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     14/12/2013
 # Copyright:   (c) Steve Micallef, 2013
@@ -12,7 +13,7 @@
 
 from netaddr import IPAddress, IPNetwork
 import re
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent, unicode
+from sflib import SpiderFootPlugin, SpiderFootEvent, unicode
 
 malchecks = {
     'TOR Node List': {

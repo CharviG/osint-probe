@@ -6,6 +6,7 @@
 #               open proxies, malicious servers, vulnerable servers, etc.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     07/01/2014
 # Copyright:   (c) Steve Micallef 2014
@@ -14,7 +15,7 @@
 
 import socket
 from netaddr import IPNetwork
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_dronebl(SpiderFootPlugin):

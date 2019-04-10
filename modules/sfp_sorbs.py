@@ -14,7 +14,7 @@
 
 import socket
 from netaddr import IPNetwork
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_sorbs(SpiderFootPlugin):

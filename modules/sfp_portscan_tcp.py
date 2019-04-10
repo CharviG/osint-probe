@@ -5,6 +5,7 @@
 #               addresses identified.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     20/02/2013
 # Copyright:   (c) Steve Micallef 2013
@@ -15,7 +16,7 @@ from netaddr import IPNetwork
 import socket
 import random
 import threading
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_portscan_tcp(SpiderFootPlugin):

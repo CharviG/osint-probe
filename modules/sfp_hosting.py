@@ -5,6 +5,7 @@
 #               appear in an IP categorization table of hosting providers.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     16/08/2015
 # Copyright:   (c) Steve Micallef 2015
@@ -12,7 +13,7 @@
 # -------------------------------------------------------------------------------
 
 from netaddr import IPAddress
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_hosting(SpiderFootPlugin):

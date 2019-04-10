@@ -5,6 +5,7 @@
 #               and hostnames identified, and optionally affiliates.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     07/07/2017
 # Copyright:   (c) Steve Micallef 2017
@@ -13,7 +14,7 @@
 
 import socket
 from netaddr import IPAddress
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 class sfp_dnsneighbor(SpiderFootPlugin):
     """DNS Look-aside:Footprint,Investigate:DNS::Attempt to reverse-resolve the IP addresses next to your target to see if they are related."""

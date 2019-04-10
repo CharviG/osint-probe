@@ -4,6 +4,7 @@
 # Purpose:      Searches Robtex.com for hosts sharing the same IP.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     12/04/2014
 # Copyright:   (c) Steve Micallef 2014
@@ -14,7 +15,7 @@ import socket
 import json
 import time
 from netaddr import IPNetwork
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_robtex(SpiderFootPlugin):

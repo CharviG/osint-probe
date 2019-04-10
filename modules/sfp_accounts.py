@@ -5,6 +5,7 @@
 #               to Micah Hoffman's (https://github.com/WebBreacher) list.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     18/02/2015
 # Copyright:   (c) Steve Micallef 2015
@@ -15,7 +16,7 @@ import time
 import threading
 import json
 import random
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
 class sfp_accounts(SpiderFootPlugin):

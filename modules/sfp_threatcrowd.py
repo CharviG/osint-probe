@@ -4,6 +4,7 @@
 # Purpose:      Query threatcrowd.org for identified IP addresses.
 #
 # Author:      Steve Micallef <steve@binarypool.com>
+# Modified:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
 # Created:     21/11/2016
 # Copyright:   (c) Steve Micallef
@@ -12,7 +13,7 @@
 
 import json
 from netaddr import IPNetwork
-from spiderfoot.sflib import SpiderFootPlugin, SpiderFootEvent, unicode
+from sflib import SpiderFootPlugin, SpiderFootEvent, unicode
 
 
 class sfp_threatcrowd(SpiderFootPlugin):
