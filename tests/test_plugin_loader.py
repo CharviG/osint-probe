@@ -1,7 +1,7 @@
 import unittest
 
 from sflib import SpiderFoot, SpiderFootEvent, SpiderFootPlugin
-from events import Probe
+from osint_probe import Probe
 
 
 class TestPluginLoader(unittest.TestCase):
