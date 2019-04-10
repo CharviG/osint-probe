@@ -69,6 +69,3 @@ class Probe:
         })
 
         m.handleEvent(event)
-
-
-event_probe = Probe('IP_ADDRESS', [])

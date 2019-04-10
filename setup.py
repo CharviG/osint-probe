@@ -2,6 +2,7 @@ from setuptools import setup
 
 setup(
     name='osint_probe',
+    version='1.0.0',
     author='Ajoy Oommen',
     description='An OSINT tool made using Spiderfoot',
     license='MIT',
