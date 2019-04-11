@@ -43,7 +43,8 @@ class Probe:
         curr_path = os.path.dirname(__file__)
 
         for _module in module_list:
-            if _module not in os.listdir(curr_path + '\\sfp_modules\\'):
+            modules_path = os.path.join(curr_path, 'sfp_modules')
+            if _module not in os.listdir(modules_path):
                 continue
 
             mod_name = _module.split('.')[0]

@@ -30,7 +30,7 @@ class sfp_accounts(SpiderFootPlugin):
         "ignorenamedict": True,
         "ignoreworddict": True,
         "musthavename": True,
-        "_maxthreads": 40
+        "_maxthreads": 25
     }
 
     # Option descriptions
@@ -162,26 +162,23 @@ class sfp_accounts(SpiderFootPlugin):
         return self.siteResults
 
     def batchSites(self, name):
-        i = 0
         res = list()
         siteList = list()
 
         for site in self.sites:
             if not site['valid'] or 'check_uri' not in site:
                 continue
-            if i >= self.opts['_maxthreads']:
-                data = self.threadSites(name, siteList)
-                if data == None:
-                    return res
-
-                for ret in data.keys():
-                    if data[ret]:
-                        res.append(ret)
-                i = 0
-                siteList = list()
 
             siteList.append(site)
-            i += 1
+
+        # TODO: Respect _maxthreads
+        data = self.threadSites(name, siteList)
+        if data == None:
+            return res
+
+        for ret in data.keys():
+            if data[ret]:
+                res.append(ret)
 
         return res
 
