@@ -1,20 +1,17 @@
-# -*- coding: utf-8 -*-
-from distutils.core import setup
-import py2exe
+from setuptools import setup
 
 setup(
-    console=['sf.py'],
-    options={
-        "py2exe": {
-            "packages": ["modules", "ext.dns", "sflib", "sfwebui", "sfdb", "mako",
-                         "cherrypy", "M2Crypto", "netaddr", "ext.socks", "ext.PyPDF2",
-                         "ext.openxmllib", "ext.stem", "ext.whois",
-                         "ext.phonenumbers", "ext.gexf", "bs4", "requests" ],
-            "bundle_files": 1,
-            "compressed": True,
-            "includes": ['lxml._elementpath'],
-            "dll_excludes": [ "w9xpopen.exe", "mswsock.dll", "powrprof.dll", "crypt32.dll", "mpr.dll" ]
-        }
-    },
-    zipfile=None
+    name='osint_probe',
+    version='1.0.0',
+    author='Ajoy Oommen',
+    description='An OSINT tool made using Spiderfoot',
+    license='MIT',
+    packages=['sfp_modules'],
+    py_modules=['sflib', 'osint_probe'],
+    install_requires=[
+        'beautifulsoup4',
+        'lxml',
+        'netaddr',
+        'requests'
+    ]
 )
