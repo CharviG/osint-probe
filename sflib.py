@@ -22,6 +22,7 @@ import sys
 import time
 import urllib
 
+from bs4 import BeautifulSoup, SoupStrainer
 import requests
 
 
@@ -203,7 +204,12 @@ class SpiderFoot:
                     result['headers'][k.lower()] = v
 
                 result['realurl'] = url
-                result['content'] = _.json()
+
+                try:
+                    result['content'] = _.json()
+                except Exception as e:
+                    result['content'] = None
+                    self.debug('Unable to load JSON from {} - {}'.format(url, e))
                 result['code'] = str(_.status_code)
                 result['status'] = 'OK'
             else:
@@ -250,6 +256,183 @@ class SpiderFoot:
                 self.fatal('URL could not be fetched (' + str(x) + ')')
 
         return result
+
+    # Find all URLs within the supplied content. This does not fetch any URLs!
+    # A dictionary will be returned, where each link will have the keys
+    # 'source': The URL where the link was obtained from
+    # 'original': What the link looked like in the content it was obtained from
+    # The key will be the *absolute* URL of the link obtained, so for example if
+    # the link '/abc' was obtained from 'http://xyz.com', the key in the dict will
+    # be 'http://xyz.com/abc' with the 'original' attribute set to '/abc'
+    def parseLinks(self, url, data, domains, parseText=True):
+        returnLinks = dict()
+        urlsRel = []
+
+        if type(domains) is str:
+            domains = [domains]
+
+        tags = {
+            'a': 'href',
+            'img': 'src',
+            'script': 'src',
+            'link': 'href',
+            'area': 'href',
+            'base': 'href',
+            'form': 'action'
+        }
+
+        try:
+            proto = url.split(":")[0]
+        except BaseException as e:
+            proto = "http"
+        if proto == None:
+            proto = "http"
+
+        if data is None or len(data) == 0:
+            self.debug("parseLinks() called with no data to parse.")
+            return None
+
+        try:
+            for t in tags.keys():
+                for lnk in BeautifulSoup(data, "lxml", parse_only=SoupStrainer(t)).find_all(t):
+                    if lnk.has_attr(tags[t]):
+                        urlsRel.append([None, lnk[tags[t]]])
+        except BaseException as e:
+            self.error("Error parsing with BeautifulSoup: " + str(e), False)
+            return None
+
+        # Find potential links that aren't links (text possibly in comments, etc.)
+        data = urllib.parse.unquote(data)
+        for domain in domains:
+            if parseText:
+                try:
+                    # Because we're working with a big blob of text now, don't worry
+                    # about clobbering proper links by url decoding them.
+                    regRel = re.compile('(.)([a-zA-Z0-9\-\.]+\.' + domain + ')',
+                                        re.IGNORECASE)
+                    urlsRel = urlsRel + regRel.findall(data)
+                except Exception as e:
+                    self.error("Error applying regex2 to: " + data + "(" + str(e) + ")", False)
+                try:
+                    # Some links are sitting inside a tag, e.g. Google's use of <cite>
+                    regRel = re.compile('([>\"])([a-zA-Z0-9\-\.\:\/]+\.' + domain + '/.[^<\"]+)', re.IGNORECASE)
+                    urlsRel = urlsRel + regRel.findall(data)
+                except Exception as e:
+                    self.error("Error applying regex3 to: " + data + "(" + str(e) + ")", False)
+
+            # Loop through all the URLs/links found
+            for linkTuple in urlsRel:
+                # Remember the regex will return two vars (two groups captured)
+                junk = linkTuple[0]
+                link = linkTuple[1]
+                if type(link) != unicode:
+                    link = unicode(link, 'utf-8', errors='replace')
+                linkl = link.lower()
+                absLink = None
+
+                if len(link) < 1:
+                    continue
+
+                # Don't include stuff likely part of some dynamically built incomplete
+                # URL found in Javascript code (character is part of some logic)
+                if link[len(link) - 1] == '.' or link[0] == '+' or \
+                                'javascript:' in linkl or '()' in link:
+                    self.debug('unlikely link: ' + link)
+                    continue
+                # Filter in-page links
+                if re.match('.*#.[^/]+', link):
+                    self.debug('in-page link: ' + link)
+                    continue
+
+                # Ignore mail links
+                if 'mailto:' in linkl:
+                    self.debug("Ignoring mail link: " + link)
+                    continue
+
+                # URL decode links
+                if '%2f' in linkl:
+                    link = urllib.parse.unquote(link)
+
+                # Capture the absolute link:
+                # If the link contains ://, it is already an absolute link
+                if '://' in link:
+                    absLink = link
+
+                # If the link starts with a /, the absolute link is off the base URL
+                if link.startswith('/'):
+                    absLink = self.urlBaseUrl(url) + link
+
+                # Protocol relative URLs
+                if link.startswith('//'):
+                    absLink = proto + ':' + link
+
+                # Maybe the domain was just mentioned and not a link, so we make it one
+                if absLink is None and domain.lower() in link.lower():
+                    absLink = proto + '://' + link
+
+                # Otherwise, it's a flat link within the current directory
+                if absLink is None:
+                    absLink = self.urlBaseDir(url) + link
+
+                # Translate any relative pathing (../)
+                absLink = self.urlRelativeToAbsolute(absLink)
+                returnLinks[absLink] = {'source': url, 'original': link}
+
+        return returnLinks
+
+    # Extract the top level directory from a URL
+    def urlBaseDir(self, url):
+
+        bits = url.split('/')
+
+        # For cases like 'www.somesite.com'
+        if len(bits) == 0:
+            return url + '/'
+
+        # For cases like 'http://www.blah.com'
+        if '://' in url and url.count('/') < 3:
+            return url + '/'
+
+        base = '/'.join(bits[:-1])
+        return base + '/'
+
+    # Turn a relative path into an absolute path
+    def urlRelativeToAbsolute(self, url):
+        finalBits = list()
+
+        if '..' not in url:
+            return url
+
+        bits = url.split('/')
+
+        for chunk in bits:
+            if chunk == '..':
+                # Don't pop the last item off if we're at the top
+                if len(finalBits) <= 1:
+                    continue
+
+                # Don't pop the last item off if the first bits are not the path
+                if '://' in url and len(finalBits) <= 3:
+                    continue
+
+                finalBits.pop()
+                continue
+
+            finalBits.append(chunk)
+        return '/'.join(finalBits)
+
+    # Extract the scheme and domain from a URL
+    # Does not return the trailing slash! So you can do .endswith()
+    # checks.
+    def urlBaseUrl(self, url):
+        if '://' in url:
+            bits = re.match('(\w+://.[^/:\?]*)[:/\?].*', url)
+        else:
+            bits = re.match('(.[^/:\?]*)[:/\?]', url)
+
+        if bits is None:
+            return url.lower()
+        return bits.group(1).lower()
 
 
 # Override the default redirectors to re-use cookies
@@ -298,7 +481,6 @@ class SpiderFootPlugin:
     # one that uses the supplied SOCKS server
     def _updateSocket(self, sock):
         socket = sock
-        #urllib2.socket = sock
 
     # Used to clear any listener relationships, etc. This is needed because
     # Python seems to cache local variables even between threads.
@@ -306,7 +488,7 @@ class SpiderFootPlugin:
         self._listenerModules = list()
         self._stopScanning = False
 
-    # Will always be overriden by the implementer.
+    # Will always be overridden by the implementer.
     def setup(self, sf, userOpts=dict()):
         pass
 
