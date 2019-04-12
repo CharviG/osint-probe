@@ -83,14 +83,14 @@ class sfp_threatcrowd(SpiderFootPlugin):
         if not url:
             url = "http://www.threatcrowd.org/searchApi/v2/domain/report/?domain=" + qry
 
-        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot")
+        res = self.sf.fetchUrl(url, timeout=self.opts['_fetchtimeout'], useragent="SpiderFoot", isJson=True)
 
         if res['content'] is None:
             self.sf.info("No ThreatCrowd info found for " + qry)
             return None
 
         try:
-            ret = json.loads(res['content'])
+            ret = res['content']
         except Exception as e:
             self.sf.error("Error processing JSON response from ThreatCrowd.", False)
             return None
