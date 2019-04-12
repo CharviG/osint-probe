@@ -22,7 +22,7 @@ class sfp_wikileaks(SpiderFootPlugin):
 
     # Default options
     opts = {
-        'daysback': 365,
+        'daysback': 0,
         'external': True
     }
 
@@ -126,10 +126,12 @@ class sfp_wikileaks(SpiderFootPlugin):
                             self.notifyListeners(evt)
                             valid = True
 
-            if valid:
-                evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'], 
-                                      self.__name__, event)
-                self.notifyListeners(evt)
+            # Suppress Web content from results
+            # if valid:
+            #     evt = SpiderFootEvent("SEARCH_ENGINE_WEB_CONTENT", res['content'],
+            #                           self.__name__, event)
+            #
+            #     self.notifyListeners(evt)
 
             # Fail-safe to prevent infinite looping
             if page > 50:
