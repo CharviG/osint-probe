@@ -204,7 +204,12 @@ class SpiderFoot:
                     result['headers'][k.lower()] = v
 
                 result['realurl'] = url
-                result['content'] = _.json()
+
+                try:
+                    result['content'] = _.json()
+                except Exception as e:
+                    result['content'] = None
+                    self.debug('Unable to load JSON from {} - {}'.format(url, e))
                 result['code'] = str(_.status_code)
                 result['status'] = 'OK'
             else:
