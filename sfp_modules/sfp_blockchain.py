@@ -60,7 +60,6 @@ class sfp_blockchain(SpiderFootPlugin):
         res = self.sf.fetchUrl("https://blockchain.info/balance?active=" + eventData,
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'],
                                isJson=True)
-        import ipdb; ipdb.set_trace()
         if res['content'] is None:
             self.sf.info("No Blockchain info found for " + eventData)
             return None
