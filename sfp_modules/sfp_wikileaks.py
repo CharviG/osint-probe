@@ -137,6 +137,11 @@ class sfp_wikileaks(SpiderFootPlugin):
             if page > 50:
                 break
 
+            # This code currently returns duplicate results from the first page, probably
+            # keepGoing = False is a hack to limit results to only one page.
+            # TODO: handle duplications better
+            keepGoing = False
+
             if keepGoing:
                 page += 1
                 wlurl = "https://search.wikileaks.org/?query=%22" + qdata + "%22" + \
