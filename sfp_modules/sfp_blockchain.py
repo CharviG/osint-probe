@@ -39,7 +39,7 @@ class sfp_blockchain(SpiderFootPlugin):
     # This is to support the end user in selecting modules based on events
     # produced.
     def producedEvents(self):
-        return ["BITCOIN_BALANCE"]
+        return ["BITCOIN_ADDRESS_DATA"]
 
     # Handle events sent to this module
     def handleEvent(self, event):
@@ -56,8 +56,8 @@ class sfp_blockchain(SpiderFootPlugin):
         else:
             self.results[eventData] = True
 
-        # Wallet balance
-        res = self.sf.fetchUrl("https://blockchain.info/balance?active=" + eventData,
+        # Fetch address information
+        res = self.sf.fetchUrl("https://blockchain.info/rawaddr/" + eventData,
                                timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'],
                                isJson=True)
         if res['content'] is None:
@@ -65,12 +65,11 @@ class sfp_blockchain(SpiderFootPlugin):
             return None
         try:
             data = res['content']
-            balance = float(data[eventData]['final_balance']) / 100000000
         except Exception as e:
             self.sf.debug("Error processing JSON response.")
             return None
 
-        evt = SpiderFootEvent("BITCOIN_BALANCE", str(balance) + " BTC", self.__name__, event)
+        evt = SpiderFootEvent("BITCOIN_ADDRESS_DATA", data, self.__name__, event)
         self.notifyListeners(evt)
 
         return None
