@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
-# Name:         sfp_ethereum
-# Purpose:      SpiderFoot plug-in to look up Ethereum address balance, transactions and tokens by
-#               querying blockscout.com.
+# Name:         sfp_ripple
+# Purpose:      SpiderFoot plug-in to look up Ripple address balance and transactions
 #
 # Author:    Ajoy Oommen <ajoyoommen@gmail.com>
 #
@@ -10,13 +9,13 @@
 # Licence:     MIT
 # ------------------------------------------------------
 
-from sflib import SpiderFoot, SpiderFootPlugin, SpiderFootEvent
+from sflib import SpiderFootPlugin, SpiderFootEvent
 
 
-class sfp_ethereum(SpiderFootPlugin):
+class sfp_ripple(SpiderFootPlugin):
     opts = {
-        "api_root": "https://blockscout.com/eth/mainnet/api",
-        "transaction_offset": 50
+        "api_root": "https://data.ripple.com/v2",
+        "transactions_limit": 50
     }
     results = dict()
 
@@ -28,14 +27,14 @@ class sfp_ethereum(SpiderFootPlugin):
             self.opts[opt] = userOpts[opt]
 
     def watchedEvents(self):
-        return ['ETHEREUM_ADDRESS']
+        return ['RIPPLE_ADDRESS']
 
     def producedEvents(self):
-        return ["ETHEREUM_ADDRESS_DATA"]
+        return ["RIPPLE_ADDRESS_DATA"]
 
     def query_api(self, url):
         res = self.sf.fetchUrl(
-            self.opts["api_root"] + "?" + url,
+            self.opts["api_root"] + url,
             timeout=self.opts['_fetchtimeout'], useragent=self.opts['_useragent'],
             isJson=True)
         if res['content'] is None:
@@ -63,14 +62,10 @@ class sfp_ethereum(SpiderFootPlugin):
             self.results[eventData] = True
 
         data = {
-            "balance": self.query_api(
-                "module=account&action=balance&address=" + eventData),
-            "transations": self.query_api(
-                "module=account&action=txlist&address={}&offset={}".format(eventData, self.opts["transaction_offset"])),
-            "tokens": self.query_api(
-                "module=account&action=tokenlist&address=" + eventData)
+            "balance": self.query_api("/accounts/{}/balances".format(eventData)),
+            "transactions": self.query_api("/accounts/{}/transactions?limit={}".format(eventData, self.opts["transactions_limit"]))
         }
 
-        evt = SpiderFootEvent("ETHEREUM_ADDRESS_DATA", data, self.__name__, event)
+        evt = SpiderFootEvent("RIPPLE_ADDRESS_DATA", data, self.__name__, event)
         self.notifyListeners(evt)
         return None
