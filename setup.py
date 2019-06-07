@@ -1,8 +1,13 @@
 from setuptools import setup
 
+
+with open('VERSION') as f:
+    __version__ = f.read()
+
+
 setup(
     name='osint_probe',
-    version='1.0.0',
+    version=__version__,
     author='Ajoy Oommen',
     description='An OSINT tool made using Spiderfoot',
     license='MIT',
