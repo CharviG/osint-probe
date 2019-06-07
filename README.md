@@ -1,13 +1,13 @@
 # OSINT PROBE
 
-The purpose of this module is to modify spiderfoot modules to be run specifically rather than in discovery mode.
+The purpose of this module is to modify Spiderfoot's modules to be run specifically rather than in discovery mode.
 
 The end goals are:
  
- * To use run spiderfoot modules on a particular type of event
- * Use spiderfoot modules with minimal code changes.
+ * To invoke Spiderfoot modules on a particular type of event
+ * Integrate Spiderfoot modules with minimal code changes.
  * Python 3 compatibility
- * Design a core modules that can be plugged in easily. 
+ * Design core modules that can be used to plug-in Spiderfoot modules easily.
 
 ## Installation
 
