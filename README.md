@@ -16,11 +16,20 @@ The end goals are:
 
 ## Usage
 
-    from osint_probe import Probe
+* Import Probe
 
-    ip_probe = Probe('IP_ADDRESS', {
-        'IP_REPUTATION': ['sfp_abusech.py']
-    })
+        from osint_probe import Probe
 
-    ip_probe.run('192.168.1.1', 'IP_REPUTATION')
+* Create a Probe for any particular event, Eg: IP_ADDRESS
 
+        ip_probe = Probe('IP_ADDRESS', {
+            'IP_REPUTATION': ['sfp_abusech.py']
+        })
+
+        ip_probe.run('192.168.1.1', 'IP_REPUTATION')
+
+* Probe for CRYPTOCURRENCY events
+
+        crypto_probe = Probe("CRYPTOCURRENCY_ADDRESS", {
+            "CRYPTOCURRENCY_ADDRESS": ["sfp_cryptocurrency.py"]}, 'OSINT')
+        crypto_probe.run("13usM2ns3f466LP65EY1h8hnTBLFiJV6rD", "CRYPTOCURRENCY_ADDRESS")
