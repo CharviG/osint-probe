@@ -25,6 +25,15 @@ import urllib
 from bs4 import BeautifulSoup, SoupStrainer
 import requests
 
+if os.getenv('HTTPS_PROXY_SPIDERFOOT') != None:  
+    https_proxy = os.getenv('HTTPS_PROXY_SPIDERFOOT')
+    proxies = {
+       'https': "http://"+https_proxy,
+    }
+else:
+    proxies = None
+print("Proxies in Spiderfoot", proxies)
+
 
 def unicode(text, *args, **kwargs):
     return text
@@ -159,7 +168,7 @@ class SpiderFoot:
                           " [timeout: " + \
                           str(timeout) + "]")
 
-                hdr = requests.head(url, headers=header, verify=False, timeout=timeout)
+                hdr = requests.head(url, headers=header, proxies=proxies, verify=False)
                 size = int(hdr.headers.get('content-length', 0))
                 result['realurl'] = hdr.headers.get('location', url)
                 result['code'] = str(hdr.status_code)
@@ -176,7 +185,7 @@ class SpiderFoot:
                               " [timeout: " + \
                               str(timeout) + "]")
 
-                    hdr = requests.head(result['realurl'], headers=header, verify=False)
+                    hdr = requests.head(result['realurl'], proxies=proxies, headers=header, verify=False, timeout=timeout)
                     size = int(hdr.headers.get('content-length', 0))
                     result['realurl'] = hdr.headers.get('location', result['realurl'])
                     result['code'] = str(hdr.status_code)
@@ -185,6 +194,8 @@ class SpiderFoot:
                         return result
 
             req = urllib.request.Request(url, postData, header)
+            if proxies != None:
+                req.set_proxy(https_proxy, 'https')
             if cookies is not None:
                 req.add_header('cookie', cookies)
                 if not noLog:
@@ -198,7 +209,7 @@ class SpiderFoot:
             result['headers'] = dict()
 
             if isJson:
-                _ = requests.get(url, headers=header)
+                _ = requests.get(url, headers=header, proxies=proxies)
 
                 for k, v in _.headers.items():
                     result['headers'][k.lower()] = v
@@ -213,10 +224,12 @@ class SpiderFoot:
                 result['code'] = str(_.status_code)
                 result['status'] = 'OK'
             else:
-                opener = urllib.request.build_opener(SmartRedirectHandler())
+                if proxies != None:
+                    opener = urllib.request.build_opener(urllib.request.ProxyHandler(proxies))
+                else:
+                    opener = urllib.request.build_opener(SmartRedirectHandler())
                 fullPage = opener.open(req, timeout=timeout)
                 content = fullPage.read()
-
                 for k, v in fullPage.info().items():
                     result['headers'][k.lower()] = v
 
