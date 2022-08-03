@@ -11,7 +11,7 @@ The end goals are:
 
 ## Installation
 
-    pip install git+https://github.com/ajoyoommen/osint-probe.git
+    pip install git+https://github.com/CharviG/osint-probe.git
 
 
 ## Usage
